@@ -118,7 +118,7 @@
     <Content Include="Content\Styles\FileBrowser.css" />
     <Content Include="Env.aspx" />
     <Content Include="Default.aspx" />
-    <Content Include="DebugConsole\index.html" />
+    <Content Include="index.html" />
     <Content Include="Global.asax" />
     <Content Include="Content\Scripts\jquery-console\jquery.console.js" />
     <Content Include="Content\Scripts\KuduExec.js" />
@@ -230,6 +230,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\Scripts\jquery-console\README" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="DebugConsole\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
