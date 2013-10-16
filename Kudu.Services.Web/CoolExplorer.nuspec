@@ -7,7 +7,7 @@
     <owners>Pranav Krishnamoorthy</owners>
     <licenseUrl>http://opensource.org/licenses/Apache-2.0</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Very cool command line and File Explorer for Azure web sites</description>
+    <description>Cool command line and File Explorer for Azure web sites</description>
     <copyright>Copyright 2013</copyright>
     <tags>file explorer</tags>
   </metadata>
