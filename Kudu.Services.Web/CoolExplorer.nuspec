@@ -2,9 +2,9 @@
 <package >
   <metadata>
     <id>CoolExplorer</id>
-    <version>1.0.1</version>
-    <authors>David Ebbo</authors>
-    <owners>David Ebbo</owners>
+    <version>1.0.2</version>
+    <authors>Pranav Krishnamoorthy</authors>
+    <owners>Pranav Krishnamoorthy</owners>
     <licenseUrl>http://opensource.org/licenses/Apache-2.0</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Very cool command line and File Explorer for Azure web sites</description>
