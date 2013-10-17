@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>ProcessWizard</id>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
     <authors>Suwat Bodin</authors>
     <owners>Suwat Bodin</owners>
     <licenseUrl>http://opensource.org/licenses/Apache-2.0</licenseUrl>
