@@ -7,6 +7,7 @@ using System.Web;
 using Kudu.Contracts.Jobs;
 using Kudu.Contracts.Settings;
 using Kudu.Contracts.Tracing;
+using Kudu.Core.Infrastructure;
 using Kudu.Core.Tracing;
 
 namespace Kudu.Core.Jobs
@@ -40,7 +41,7 @@ namespace Kudu.Core.Jobs
 
         protected IEnvironment Environment { get; private set; }
 
-        protected IFileSystem FileSystem { get; private set; }
+        protected IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
 
         protected IDeploymentSettingsManager Settings { get; private set; }
 
@@ -52,11 +53,10 @@ namespace Kudu.Core.Jobs
 
         protected IAnalytics Analytics { get; private set; }
 
-        protected JobsManagerBase(ITraceFactory traceFactory, IEnvironment environment, IFileSystem fileSystem, IDeploymentSettingsManager settings, IAnalytics analytics, string jobsTypePath)
+        protected JobsManagerBase(ITraceFactory traceFactory, IEnvironment environment, IDeploymentSettingsManager settings, IAnalytics analytics, string jobsTypePath)
         {
             TraceFactory = traceFactory;
             Environment = environment;
-            FileSystem = fileSystem;
             Settings = settings;
             Analytics = analytics;
 
@@ -144,7 +144,7 @@ namespace Kudu.Core.Jobs
 
         protected TJobStatus GetStatus<TJobStatus>(string statusFilePath) where TJobStatus : class, IJobStatus, new()
         {
-            return JobLogger.ReadJobStatusFromFile<TJobStatus>(TraceFactory, FileSystem, statusFilePath) ?? new TJobStatus();
+            return JobLogger.ReadJobStatusFromFile<TJobStatus>(TraceFactory, statusFilePath) ?? new TJobStatus();
         }
 
         protected Uri BuildJobsUrl(string relativeUrl)

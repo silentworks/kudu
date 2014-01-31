@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
 using Kudu.Contracts.Tracing;
+using Kudu.Core.Infrastructure;
 using Kudu.Services.Infrastructure;
 
 namespace Kudu.Services
@@ -78,7 +79,7 @@ namespace Kudu.Services
             }
         }
 
-        public static void Extract(this ZipArchive archive, FileSystem fileSystem, string directoryName)
+        public static void Extract(this ZipArchive archive, string directoryName)
         {
             foreach (ZipArchiveEntry entry in archive.Entries)
             {
@@ -86,11 +87,11 @@ namespace Kudu.Services
                 if (entry.Length == 0 && (path.EndsWith("/", StringComparison.Ordinal) || path.EndsWith("\\", StringComparison.Ordinal)))
                 {
                     // Extract directory
-                    fileSystem.Directory.CreateDirectory(path);
+                    FileSystemHelpers.Instance.Directory.CreateDirectory(path);
                 }
                 else
                 {
-                    FileInfoBase fileInfo = fileSystem.FileInfo.FromFileName(path);
+                    FileInfoBase fileInfo = FileSystemHelpers.Instance.FileInfo.FromFileName(path);
 
                     if (!fileInfo.Directory.Exists)
                     {

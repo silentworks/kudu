@@ -7,8 +7,15 @@ using System.Linq;
 
 namespace Kudu.Core.Infrastructure
 {
-    internal static class FileSystemHelpers
+    public static class FileSystemHelpers
     {
+        public static IFileSystem Instance { get; set; }
+
+        static FileSystemHelpers()
+        {
+            Instance = new FileSystem();
+        }
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
         public static void DeleteDirectorySafe(string path, bool ignoreErrors = true)
         {
@@ -42,25 +49,13 @@ namespace Kudu.Core.Infrastructure
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
-        internal static string EnsureDirectory(string path)
+        public static string EnsureDirectory(string path)
         {
-            return EnsureDirectory(new FileSystem(), path);
-        }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
-        internal static string EnsureDirectory(IFileSystem fileSystem, string path)
-        {
-            if (!fileSystem.Directory.Exists(path))
+            if (!Instance.Directory.Exists(path))
             {
-                fileSystem.Directory.CreateDirectory(path);
+                Instance.Directory.CreateDirectory(path);
             }
             return path;
-        }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
-        public static bool DeleteFileSafe(string path)
-        {
-            return DeleteFileSafe(new FileSystem(), path);
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
@@ -117,13 +112,13 @@ namespace Kudu.Core.Infrastructure
         }
 
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
-        internal static bool DeleteFileSafe(IFileSystem fileSystem, string path)
+        public static bool DeleteFileSafe(string path)
         {
             try
             {
-                if (fileSystem.File.Exists(path))
+                if (Instance.File.Exists(path))
                 {
-                    fileSystem.File.Delete(path);
+                    Instance.File.Delete(path);
                     return true;
                 }
             }
@@ -135,7 +130,7 @@ namespace Kudu.Core.Infrastructure
 
         // From MSDN: http://msdn.microsoft.com/en-us/library/bb762914.aspx
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
-        internal static void CopyDirectoryRecursive(IFileSystem fileSystem, string sourceDirPath, string destinationDirPath, bool overwrite = true)
+        public static void CopyDirectoryRecursive(string sourceDirPath, string destinationDirPath, bool overwrite = true)
         {
             // Get the subdirectories for the specified directory.
             var sourceDir = new DirectoryInfo(sourceDirPath);
@@ -148,9 +143,9 @@ namespace Kudu.Core.Infrastructure
             }
 
             // If the destination directory doesn't exist, create it.
-            if (!fileSystem.Directory.Exists(destinationDirPath))
+            if (!Instance.Directory.Exists(destinationDirPath))
             {
-                fileSystem.Directory.CreateDirectory(destinationDirPath);
+                Instance.Directory.CreateDirectory(destinationDirPath);
             }
 
             // Get the files in the directory and copy them to the new location.
@@ -160,7 +155,7 @@ namespace Kudu.Core.Infrastructure
                 if (sourceFile != null)
                 {
                     string destinationFilePath = Path.Combine(destinationDirPath, sourceFile.Name);
-                    fileSystem.File.Copy(sourceFile.FullName, destinationFilePath, overwrite);
+                    Instance.File.Copy(sourceFile.FullName, destinationFilePath, overwrite);
                 }
                 else
                 {
@@ -169,7 +164,7 @@ namespace Kudu.Core.Infrastructure
                     {
                         // Copy sub-directories and their contents to new location.
                         string destinationSubDirPath = Path.Combine(destinationDirPath, sourceSubDir.Name);
-                        CopyDirectoryRecursive(fileSystem, sourceSubDir.FullName, destinationSubDirPath, overwrite);
+                        CopyDirectoryRecursive(sourceSubDir.FullName, destinationSubDirPath, overwrite);
                     }
                 }
             }

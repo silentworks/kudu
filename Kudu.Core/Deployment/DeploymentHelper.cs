@@ -31,8 +31,10 @@ namespace Kudu.Core.Deployment
                    (VsHelper.IsWap(path) || VsHelper.IsExecutableProject(path));
         }
 
-        public static bool IsDefaultWebRootContent(string webroot, IFileSystem fileSystem)
+        public static bool IsDefaultWebRootContent(string webroot)
         {
+            IFileSystem fileSystem = FileSystemHelpers.Instance;
+
             if (!fileSystem.Directory.Exists(webroot))
             {
                 // degenerated

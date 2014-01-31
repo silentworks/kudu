@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.IO.Abstractions;
+using Kudu.Core.Infrastructure;
 
 namespace Kudu.Core.Deployment.Generator
 {
@@ -14,8 +15,9 @@ namespace Kudu.Core.Deployment.Generator
 
         private static readonly string[] PotentialNodeDetectionFiles = new[] { "server.js", "app.js" };
 
-        public static bool LooksLikeNode(IFileSystem fileSystem, string siteFolder)
+        public static bool LooksLikeNode(string siteFolder)
         {
+            IFileSystem fileSystem = FileSystemHelpers.Instance;
             bool potentiallyLooksLikeNode = false;
 
             // If any of the files in NodeDetectionFiles exist

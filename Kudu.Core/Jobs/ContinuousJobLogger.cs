@@ -21,8 +21,8 @@ namespace Kudu.Core.Jobs
 
         private int _consoleLogLinesCount;
 
-        public ContinuousJobLogger(string jobName, IEnvironment environment, IFileSystem fileSystem, ITraceFactory traceFactory)
-            : base(GetStatusFileName(), environment, fileSystem, traceFactory)
+        public ContinuousJobLogger(string jobName, IEnvironment environment, ITraceFactory traceFactory)
+            : base(GetStatusFileName(), environment, traceFactory)
         {
             _historyPath = Path.Combine(Environment.JobsDataPath, Constants.ContinuousPath, jobName);
             FileSystemHelpers.EnsureDirectory(_historyPath);

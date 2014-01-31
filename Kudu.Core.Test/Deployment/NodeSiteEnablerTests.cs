@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Abstractions;
+using Kudu.Core.Infrastructure;
 using Moq;
 using Xunit;
 using Xunit.Extensions;
@@ -38,12 +39,14 @@ namespace Kudu.Core.Deployment.Generator.Test
 
             foreach (var existingFile in existingFiles)
             {
-                fileMock.Setup(f => f.Exists("site\\" + existingFile)).Returns(true);
+                var file = existingFile;
+                fileMock.Setup(f => f.Exists("site\\" + file)).Returns(true);
             }
 
             fileSystemMock.Setup(f => f.File).Returns(fileMock.Object);
+            FileSystemHelpers.Instance = fileSystemMock.Object;
 
-            bool looksLikeNodeResult = NodeSiteEnabler.LooksLikeNode(fileSystemMock.Object, "site");
+            bool looksLikeNodeResult = NodeSiteEnabler.LooksLikeNode("site");
             Assert.Equal(looksLikeNodeExpectedResult, looksLikeNodeResult);
         }
     }

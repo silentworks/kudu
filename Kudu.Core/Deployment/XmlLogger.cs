@@ -10,14 +10,13 @@ namespace Kudu.Core.Deployment
 {
     public class XmlLogger : ILogger
     {
-        private readonly string _path;
-        private readonly IFileSystem _fileSystem;
-        private readonly IAnalytics _analytics;
+        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
         private readonly static object LogLock = new object();
+        private readonly string _path;
+        private readonly IAnalytics _analytics;
 
-        public XmlLogger(IFileSystem fileSystem, string path, IAnalytics analytics)
+        public XmlLogger(string path, IAnalytics analytics)
         {
-            _fileSystem = fileSystem;
             _path = path;
             _analytics = analytics;
         }
@@ -90,9 +89,9 @@ namespace Kudu.Core.Deployment
         {
             try
             {
-                if (_fileSystem.File.Exists(_path))
+                if (FileSystem.File.Exists(_path))
                 {
-                    using (var stream = _fileSystem.File.OpenRead(_path))
+                    using (var stream = FileSystem.File.OpenRead(_path))
                     {
                         return XDocument.Load(stream);
                     }

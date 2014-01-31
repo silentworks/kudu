@@ -13,6 +13,7 @@ using System.Web.Http.Routing;
 using Kudu.Contracts.Editor;
 using Kudu.Contracts.Tracing;
 using Kudu.Core;
+using Kudu.Core.Infrastructure;
 
 namespace Kudu.Services.Infrastructure
 {
@@ -29,7 +30,7 @@ namespace Kudu.Services.Infrastructure
 
         protected const int BufferSize = 32 * 1024;
 
-        protected VfsControllerBase(ITracer tracer, IEnvironment environment, IFileSystem fileSystem, string rootPath)
+        protected VfsControllerBase(ITracer tracer, IEnvironment environment, string rootPath)
         {
             if (rootPath == null)
             {
@@ -39,7 +40,6 @@ namespace Kudu.Services.Infrastructure
             Environment = environment;
             RootPath = Path.GetFullPath(rootPath.TrimEnd(Path.DirectorySeparatorChar));
             MediaTypeMap = MediaTypeMap.Default;
-            FileSystem = fileSystem;
         }
 
         [AcceptVerbs("GET", "HEAD")]
@@ -178,6 +178,8 @@ namespace Kudu.Services.Infrastructure
             }
         }
 
+        protected static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
+
         protected ITracer Tracer { get; private set; }
 
         protected IEnvironment Environment { get; private set; }
@@ -185,8 +187,6 @@ namespace Kudu.Services.Infrastructure
         protected string RootPath { get; private set; }
 
         protected MediaTypeMap MediaTypeMap { get; private set; }
-
-        protected IFileSystem FileSystem { get; set; }
 
         protected virtual Task<HttpResponseMessage> CreateDirectoryGetResponse(DirectoryInfoBase info, string localFilePath)
         {
@@ -360,7 +360,7 @@ namespace Kudu.Services.Infrastructure
             IHttpRouteData routeData = Request.GetRouteData();
             if (routeData != null && String.IsNullOrEmpty(routeData.Values["path"] as string))
             {
-                foreach (var entry in VfsSpecialFolders.GetEntries(baseAddress, FileSystem))
+                foreach (var entry in VfsSpecialFolders.GetEntries(baseAddress))
                 {
                     yield return entry;
                 }

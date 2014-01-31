@@ -21,10 +21,10 @@ namespace Kudu.Core.Deployment
     public class DeploymentManager : IDeploymentManager
     {
         private static readonly Random _random = new Random();
+        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
 
         private readonly ISiteBuilderFactory _builderFactory;
         private readonly IEnvironment _environment;
-        private readonly IFileSystem _fileSystem;
         private readonly ITraceFactory _traceFactory;
         private readonly IAnalytics _analytics;
         private readonly IOperationLock _deploymentLock;
@@ -40,7 +40,6 @@ namespace Kudu.Core.Deployment
 
         public DeploymentManager(ISiteBuilderFactory builderFactory,
                                  IEnvironment environment,
-                                 IFileSystem fileSystem,
                                  ITraceFactory traceFactory,
                                  IAnalytics analytics,
                                  IDeploymentSettingsManager settings,
@@ -51,7 +50,6 @@ namespace Kudu.Core.Deployment
         {
             _builderFactory = builderFactory;
             _environment = environment;
-            _fileSystem = fileSystem;
             _traceFactory = traceFactory;
             _analytics = analytics;
             _deploymentLock = deploymentLock;
@@ -90,14 +88,14 @@ namespace Kudu.Core.Deployment
             {
                 string path = GetLogPath(id, ensureDirectory: false);
 
-                if (!_fileSystem.File.Exists(path))
+                if (!FileSystem.File.Exists(path))
                 {
                     throw new FileNotFoundException(String.Format(CultureInfo.CurrentCulture, Resources.Error_NoLogFound, id));
                 }
 
                 VerifyDeployment(id, IsDeploying);
 
-                var logger = new XmlLogger(_fileSystem, path, _analytics);
+                var logger = new XmlLogger(path, _analytics);
                 List<LogEntry> entries = logger.GetLogEntries().ToList();
 
                 // Determine if there's details to show at all
@@ -117,14 +115,14 @@ namespace Kudu.Core.Deployment
             {
                 string path = GetLogPath(id, ensureDirectory: false);
 
-                if (!_fileSystem.File.Exists(path))
+                if (!FileSystem.File.Exists(path))
                 {
                     throw new FileNotFoundException(String.Format(CultureInfo.CurrentCulture, Resources.Error_NoLogFound, id));
                 }
 
                 VerifyDeployment(id, IsDeploying);
 
-                var logger = new XmlLogger(_fileSystem, path, _analytics);
+                var logger = new XmlLogger(path, _analytics);
 
                 return logger.GetLogEntryDetails(entryId).ToList();
             }
@@ -137,7 +135,7 @@ namespace Kudu.Core.Deployment
             {
                 string path = GetRoot(id, ensureDirectory: false);
 
-                if (!_fileSystem.Directory.Exists(path))
+                if (!FileSystem.Directory.Exists(path))
                 {
                     throw new DirectoryNotFoundException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UnableToDeleteNoDeploymentFound, id));
                 }
@@ -666,7 +664,7 @@ namespace Kudu.Core.Deployment
 
         private IEnumerable<DeployResult> EnumerateResults()
         {
-            if (!_fileSystem.Directory.Exists(_environment.DeploymentsPath))
+            if (!FileSystem.Directory.Exists(_environment.DeploymentsPath))
             {
                 yield break;
             }
@@ -674,7 +672,7 @@ namespace Kudu.Core.Deployment
             string activeDeploymentId = _status.ActiveDeploymentId;
             bool isDeploying = IsDeploying;
 
-            foreach (var id in _fileSystem.Directory.GetDirectories(_environment.DeploymentsPath))
+            foreach (var id in FileSystem.Directory.GetDirectories(_environment.DeploymentsPath))
             {
                 DeployResult result = GetResult(id, activeDeploymentId, isDeploying);
 
@@ -759,7 +757,7 @@ namespace Kudu.Core.Deployment
         public ILogger GetLogger(string id)
         {
             var path = GetLogPath(id);
-            var xmlLogger = new XmlLogger(_fileSystem, path, _analytics);
+            var xmlLogger = new XmlLogger(path, _analytics);
             return new ProgressLogger(id, _status, new CascadeLogger(xmlLogger, _globalLogger));
         }
 
@@ -791,7 +789,7 @@ namespace Kudu.Core.Deployment
 
             if (ensureDirectory)
             {
-                return FileSystemHelpers.EnsureDirectory(_fileSystem, path);
+                return FileSystemHelpers.EnsureDirectory(path);
             }
 
             return path;

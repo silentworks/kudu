@@ -25,12 +25,11 @@ namespace Kudu.Core.Jobs
         private readonly ExternalCommandFactory _externalCommandFactory;
         private readonly IAnalytics _analytics;
 
-        protected BaseJobRunner(string jobName, string jobsTypePath, IEnvironment environment, IFileSystem fileSystem,
+        protected BaseJobRunner(string jobName, string jobsTypePath, IEnvironment environment, 
             IDeploymentSettingsManager settings, ITraceFactory traceFactory, IAnalytics analytics)
         {
             TraceFactory = traceFactory;
             Environment = environment;
-            FileSystem = fileSystem;
             Settings = settings;
             JobName = jobName;
             _analytics = analytics;
@@ -42,9 +41,9 @@ namespace Kudu.Core.Jobs
             _externalCommandFactory = new ExternalCommandFactory(Environment, Settings, Environment.RepositoryPath);
         }
 
-        protected IEnvironment Environment { get; private set; }
+        protected static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
 
-        protected IFileSystem FileSystem { get; private set; }
+        protected IEnvironment Environment { get; private set; }
 
         protected IDeploymentSettingsManager Settings { get; private set; }
 
@@ -66,7 +65,7 @@ namespace Kudu.Core.Jobs
 
         protected abstract void UpdateStatus(IJobLogger logger, string status);
 
-        private int CalculateHashForJob(string jobBinariesPath)
+        private static int CalculateHashForJob(string jobBinariesPath)
         {
             var updateDatesString = new StringBuilder();
             DirectoryInfoBase jobBinariesDirectory = FileSystem.DirectoryInfo.FromDirectoryName(jobBinariesPath);
@@ -108,7 +107,7 @@ namespace Kudu.Core.Jobs
             {
                 var tempJobInstancePath = Path.Combine(JobTempPath, Path.GetRandomFileName());
 
-                FileSystemHelpers.CopyDirectoryRecursive(FileSystem, JobBinariesPath, tempJobInstancePath);
+                FileSystemHelpers.CopyDirectoryRecursive(JobBinariesPath, tempJobInstancePath);
                 UpdateAppConfigs(tempJobInstancePath);
 
                 WorkingDirectory = tempJobInstancePath;

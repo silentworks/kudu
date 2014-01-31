@@ -13,17 +13,15 @@ namespace Kudu.Core.Deployment
     public class DeploymentStatusFile : IDeploymentStatusFile
     {
         private const string StatusFile = "status.xml";
-
+        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
         private readonly string _activeFile;
         private readonly string _statusFile;
-        private readonly IFileSystem _fileSystem;
         private readonly IOperationLock _statusLock;
 
-        private DeploymentStatusFile(string id, IEnvironment environment, IFileSystem fileSystem, IOperationLock statusLock, XDocument document = null)
+        private DeploymentStatusFile(string id, IEnvironment environment, IOperationLock statusLock, XDocument document = null)
         {
             _activeFile = Path.Combine(environment.DeploymentsPath, Constants.ActiveDeploymentFile);
             _statusFile = Path.Combine(environment.DeploymentsPath, id, StatusFile);
-            _fileSystem = fileSystem;
             _statusLock = statusLock;
 
             Id = id;
@@ -36,38 +34,38 @@ namespace Kudu.Core.Deployment
             }
         }
 
-        public static DeploymentStatusFile Create(string id, IFileSystem fileSystem, IEnvironment environment, IOperationLock statusLock)
+        public static DeploymentStatusFile Create(string id, IEnvironment environment, IOperationLock statusLock)
         {
             string path = Path.Combine(environment.DeploymentsPath, id);
 
-            FileSystemHelpers.EnsureDirectory(fileSystem, path);
+            FileSystemHelpers.EnsureDirectory(path);
 
             DateTime utcNow = DateTime.UtcNow;
-            return new DeploymentStatusFile(id, environment, fileSystem, statusLock)
+            return new DeploymentStatusFile(id, environment, statusLock)
             {
                 StartTime = utcNow,
                 ReceivedTime = utcNow
             };
         }
 
-        public static DeploymentStatusFile Open(string id, IFileSystem fileSystem, IEnvironment environment, IOperationLock statusLock)
+        public static DeploymentStatusFile Open(string id, IEnvironment environment, IOperationLock statusLock)
         {
             return statusLock.LockOperation(() =>
             {
                 string path = Path.Combine(environment.DeploymentsPath, id, StatusFile);
                 XDocument document = null;
 
-                if (!fileSystem.File.Exists(path))
+                if (!FileSystemHelpers.Instance.File.Exists(path))
                 {
                     return null;
                 }
 
-                using (var stream = fileSystem.File.OpenRead(path))
+                using (var stream = FileSystemHelpers.Instance.File.OpenRead(path))
                 {
                     document = XDocument.Load(stream);
                 }
 
-                return new DeploymentStatusFile(id, environment, fileSystem, statusLock, document);
+                return new DeploymentStatusFile(id, environment, statusLock, document);
             }, DeploymentStatusManager.LockTimeout);
         }
 
@@ -166,19 +164,19 @@ namespace Kudu.Core.Deployment
 
             _statusLock.LockOperation(() =>
             {
-                using (Stream stream = _fileSystem.File.Create(_statusFile))
+                using (Stream stream = FileSystem.File.Create(_statusFile))
                 {
                     document.Save(stream);
                 }
 
                 // Used for ETAG
-                if (_fileSystem.File.Exists(_activeFile))
+                if (FileSystem.File.Exists(_activeFile))
                 {
-                    _fileSystem.File.SetLastWriteTimeUtc(_activeFile, DateTime.UtcNow);
+                    FileSystem.File.SetLastWriteTimeUtc(_activeFile, DateTime.UtcNow);
                 }
                 else
                 {
-                    _fileSystem.File.WriteAllText(_activeFile, String.Empty);
+                    FileSystem.File.WriteAllText(_activeFile, String.Empty);
                 }
             }, DeploymentStatusManager.LockTimeout);
         }

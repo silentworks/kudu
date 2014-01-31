@@ -28,11 +28,11 @@ namespace Kudu.Core.Hooks
             Formatting = Formatting.Indented,
             NullValueHandling = NullValueHandling.Ignore
         };
+        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
 
         private readonly IEnvironment _environment;
         private readonly string _hooksFilePath;
         private readonly IOperationLock _hooksLock;
-        private readonly IFileSystem _fileSystem;
         private readonly ITracer _tracer;
 
         static WebHooksManager()
@@ -40,12 +40,11 @@ namespace Kudu.Core.Hooks
             JsonSerializerSettings.Converters.Add(new StringEnumConverter() { CamelCaseText = true });
         }
 
-        public WebHooksManager(ITracer tracer, IEnvironment environment, IOperationLock hooksLock, IFileSystem fileSystem)
+        public WebHooksManager(ITracer tracer, IEnvironment environment, IOperationLock hooksLock)
         {
             _tracer = tracer;
             _environment = environment;
             _hooksLock = hooksLock;
-            _fileSystem = fileSystem;
 
             _hooksFilePath = Path.Combine(_environment.DeploymentsPath, HooksFileName);
         }
@@ -254,12 +253,12 @@ namespace Kudu.Core.Hooks
         {
             string fileContent = null;
 
-            if (!_fileSystem.File.Exists(_hooksFilePath))
+            if (!FileSystem.File.Exists(_hooksFilePath))
             {
                 return Enumerable.Empty<WebHook>();
             }
 
-            OperationManager.Attempt(() => fileContent = _fileSystem.File.ReadAllText(_hooksFilePath));
+            OperationManager.Attempt(() => fileContent = FileSystem.File.ReadAllText(_hooksFilePath));
 
             if (!String.IsNullOrEmpty(fileContent))
             {
@@ -279,7 +278,7 @@ namespace Kudu.Core.Hooks
         private void SaveHooksToFile(IEnumerable<WebHook> hooks)
         {
             string hooksFileContent = JsonConvert.SerializeObject(hooks, JsonSerializerSettings);
-            OperationManager.Attempt(() => _fileSystem.File.WriteAllText(_hooksFilePath, hooksFileContent));
+            OperationManager.Attempt(() => FileSystem.File.WriteAllText(_hooksFilePath, hooksFileContent));
         }
     }
 }
