@@ -29,7 +29,7 @@ namespace Kudu.Core.Test
 
             Assert.False(settings.DeleteValue("non_existing"));
 
-            Assert.False(fileSystem.File.Exists(SettingsPath));
+            Assert.False(FileSystemHelpers.FileExists(SettingsPath));
         }
 
         [Fact]

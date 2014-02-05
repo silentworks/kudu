@@ -17,7 +17,6 @@ namespace Kudu.Core.Deployment.Generator
 
         public static bool LooksLikeNode(string siteFolder)
         {
-            IFileSystem fileSystem = FileSystemHelpers.Instance;
             bool potentiallyLooksLikeNode = false;
 
             // If any of the files in NodeDetectionFiles exist
@@ -25,7 +24,7 @@ namespace Kudu.Core.Deployment.Generator
             foreach (var nodeDetectionFile in NodeDetectionFiles)
             {
                 string fullPath = Path.Combine(siteFolder, nodeDetectionFile);
-                if (fileSystem.File.Exists(fullPath))
+                if (FileSystemHelpers.FileExists(fullPath))
                 {
                     return true;
                 }
@@ -36,7 +35,7 @@ namespace Kudu.Core.Deployment.Generator
             foreach (var nodeDetectionFile in PotentialNodeDetectionFiles)
             {
                 string fullPath = Path.Combine(siteFolder, nodeDetectionFile);
-                if (fileSystem.File.Exists(fullPath))
+                if (FileSystemHelpers.FileExists(fullPath))
                 {
                     potentiallyLooksLikeNode = true;
                     break;
@@ -51,7 +50,7 @@ namespace Kudu.Core.Deployment.Generator
                 foreach (var iisStartupFile in IisStartupFiles)
                 {
                     string fullPath = Path.Combine(siteFolder, iisStartupFile);
-                    if (fileSystem.File.Exists(fullPath))
+                    if (FileSystemHelpers.FileExists(fullPath))
                     {
                         return false;
                     }

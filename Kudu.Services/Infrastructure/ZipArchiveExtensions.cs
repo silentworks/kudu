@@ -87,11 +87,11 @@ namespace Kudu.Services
                 if (entry.Length == 0 && (path.EndsWith("/", StringComparison.Ordinal) || path.EndsWith("\\", StringComparison.Ordinal)))
                 {
                     // Extract directory
-                    FileSystemHelpers.Instance.Directory.CreateDirectory(path);
+                    FileSystemHelpers.CreateDirectory(path);
                 }
                 else
                 {
-                    FileInfoBase fileInfo = FileSystemHelpers.Instance.FileInfo.FromFileName(path);
+                    FileInfoBase fileInfo = FileSystemHelpers.FileInfoFromFileName(path);
 
                     if (!fileInfo.Directory.Exists)
                     {

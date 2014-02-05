@@ -16,49 +16,35 @@ namespace Kudu.Core.Infrastructure
             Instance = new FileSystem();
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
-        public static void DeleteDirectorySafe(string path, bool ignoreErrors = true)
+        public static Stream CreateFile(string path)
         {
-            DeleteFileSystemInfo(new DirectoryInfoWrapper(new DirectoryInfo(path)), ignoreErrors);
+            return Instance.File.Create(path);
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
-        public static void DeleteDirectoryContentsSafe(string path, bool ignoreErrors = true)
+        public static void CreateDirectory(string path)
         {
-            DeleteDirectoryContentsSafe(new DirectoryInfoWrapper(new DirectoryInfo(path)), ignoreErrors);
+            Instance.Directory.CreateDirectory(path);
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
-        public static IEnumerable<string> ListFiles(string path, SearchOption searchOption, params string[] lookupList)
-        {
-            if (!Directory.Exists(path))
-            {
-                return Enumerable.Empty<string>();
-            }
-
-            // Only lookup of type *.extension or path\file (no *) is supported
-            if (lookupList.Any(lookup => lookup.LastIndexOf('*') > 0))
-            {
-                throw new NotSupportedException("lookup with a '*' that is not the first character is not supported");
-            }
-
-            lookupList = lookupList.Select(lookup => lookup.TrimStart('*')).ToArray();
-
-            return Directory.EnumerateFiles(path, "*.*", searchOption)
-                            .Where(filePath => lookupList.Any(lookup => filePath.EndsWith(lookup, StringComparison.OrdinalIgnoreCase)));
-        }
-
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
         public static string EnsureDirectory(string path)
         {
-            if (!Instance.Directory.Exists(path))
+            if (!DirectoryExists(path))
             {
-                Instance.Directory.CreateDirectory(path);
+                CreateDirectory(path);
             }
             return path;
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
+        public static bool FileExists(string path)
+        {
+            return Instance.File.Exists(path);
+        }
+
+        public static bool DirectoryExists(string path)
+        {
+            return Instance.Directory.Exists(path);
+        }
+
         public static bool IsSubfolder(string parent, string child)
         {
             // normalize
@@ -67,28 +53,55 @@ namespace Kudu.Core.Infrastructure
             return childPath.StartsWith(parentPath, StringComparison.OrdinalIgnoreCase);
         }
 
+        public static Stream OpenFile(string path, FileMode mode, FileAccess access, FileShare share)
+        {
+            return Instance.File.Open(path, mode, access, share);
+        }
+
+        public static Stream OpenRead(string path)
+        {
+            return Instance.File.OpenRead(path);
+        }
+
+        public static string ReadAllText(string path)
+        {
+            return Instance.File.ReadAllText(path);
+        }
+
         /// <summary>
         /// Replaces File.ReadAllText,
         /// Will do the same thing only this can work on files that are already open (and share read/write).
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
         public static string ReadAllTextFromFile(string path)
         {
-            using (FileStream fileStream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+            using (Stream fileStream = OpenFile(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
             {
                 var streamReader = new StreamReader(fileStream);
                 return streamReader.ReadToEnd();
             }
         }
 
+        public static void WriteAllText(string path, string contents)
+        {
+            Instance.File.WriteAllText(path, contents);
+        }
+        public static DateTime GetLastWriteTimeUtc(string path)
+        {
+            return Instance.File.GetLastWriteTimeUtc(path);
+        }
+
+        public static void WriteAllBytes(string path, byte[] contents)
+        {
+            Instance.File.WriteAllBytes(path, contents);
+        }
+
         /// <summary>
         /// Replaces File.WriteAllText,
         /// Will do the same thing only this can work on files that are already open (and share read/write).
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
         public static void WriteAllTextToFile(string path, string content)
         {
-            using (FileStream fileStream = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete))
+            using (Stream fileStream = OpenFile(path, FileMode.Create, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete))
             {
                 var streamWriter = new StreamWriter(fileStream);
                 streamWriter.Write(content);
@@ -100,10 +113,9 @@ namespace Kudu.Core.Infrastructure
         /// Replaces File.AppendAllText,
         /// Will do the same thing only this can work on files that are already open (and share read/write).
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
         public static void AppendAllTextToFile(string path, string content)
         {
-            using (FileStream fileStream = File.Open(path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete))
+            using (Stream fileStream = OpenFile(path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite | FileShare.Delete))
             {
                 var streamWriter = new StreamWriter(fileStream);
                 streamWriter.Write(content);
@@ -111,25 +123,7 @@ namespace Kudu.Core.Infrastructure
             }
         }
 
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
-        public static bool DeleteFileSafe(string path)
-        {
-            try
-            {
-                if (Instance.File.Exists(path))
-                {
-                    Instance.File.Delete(path);
-                    return true;
-                }
-            }
-            catch (UnauthorizedAccessException) { }
-            catch (FileNotFoundException) { }
-
-            return false;
-        }
-
         // From MSDN: http://msdn.microsoft.com/en-us/library/bb762914.aspx
-        [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Method is used, misdiagnosed due to linking of this file")]
         public static void CopyDirectoryRecursive(string sourceDirPath, string destinationDirPath, bool overwrite = true)
         {
             // Get the subdirectories for the specified directory.
@@ -143,9 +137,9 @@ namespace Kudu.Core.Infrastructure
             }
 
             // If the destination directory doesn't exist, create it.
-            if (!Instance.Directory.Exists(destinationDirPath))
+            if (!DirectoryExists(destinationDirPath))
             {
-                Instance.Directory.CreateDirectory(destinationDirPath);
+                CreateDirectory(destinationDirPath);
             }
 
             // Get the files in the directory and copy them to the new location.
@@ -167,6 +161,109 @@ namespace Kudu.Core.Infrastructure
                         CopyDirectoryRecursive(sourceSubDir.FullName, destinationSubDirPath, overwrite);
                     }
                 }
+            }
+        }
+
+        public static void SetLastWriteTimeUtc(string path, DateTime lastWriteTimeUtc)
+        {
+            Instance.File.SetLastWriteTimeUtc(path, lastWriteTimeUtc);
+        }
+
+        public static FileInfoBase FileInfoFromFileName(string fileName)
+        {
+            return Instance.FileInfo.FromFileName(fileName);
+        }
+
+        public static DirectoryInfoBase DirectoryInfoFromDirectoryName(string path)
+        {
+            return Instance.DirectoryInfo.FromDirectoryName(path);
+        }
+
+        public static string GetFullPath(string path)
+        {
+            return Instance.Path.GetFullPath(path);
+        }
+
+        public static string[] GetFileSystemEntries(string path)
+        {
+            return Instance.Directory.GetFileSystemEntries(path);
+        }
+
+        public static IEnumerable<string> GetDirectories(string path)
+        {
+            return Instance.Directory.GetDirectories(path);
+        }
+
+        public static string[] GetFiles(string path, string pattern)
+        {
+            return Instance.Directory.GetFiles(path, pattern);
+        }
+
+        public static IEnumerable<string> ListFiles(string path, SearchOption searchOption, params string[] lookupList)
+        {
+            if (!Directory.Exists(path))
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            // Only lookup of type *.extension or path\file (no *) is supported
+            if (lookupList.Any(lookup => lookup.LastIndexOf('*') > 0))
+            {
+                throw new NotSupportedException("lookup with a '*' that is not the first character is not supported");
+            }
+
+            lookupList = lookupList.Select(lookup => lookup.TrimStart('*')).ToArray();
+
+            return Directory.EnumerateFiles(path, "*.*", searchOption)
+                            .Where(filePath => lookupList.Any(lookup => filePath.EndsWith(lookup, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        public static void DeleteFile(string path)
+        {
+            Instance.File.Delete(path);
+        }
+
+        public static bool DeleteFileSafe(string path)
+        {
+            try
+            {
+                if (FileExists(path))
+                {
+                    DeleteFile(path);
+                    return true;
+                }
+            }
+            catch (UnauthorizedAccessException) { }
+            catch (FileNotFoundException) { }
+
+            return false;
+        }
+
+        public static void DeleteDirectorySafe(string path, bool ignoreErrors = true)
+        {
+            DeleteFileSystemInfo(new DirectoryInfoWrapper(new DirectoryInfo(path)), ignoreErrors);
+        }
+
+        public static void DeleteDirectoryContentsSafe(string path, bool ignoreErrors = true)
+        {
+            DeleteDirectoryContentsSafe(new DirectoryInfoWrapper(new DirectoryInfo(path)), ignoreErrors);
+        }
+
+        private static void DeleteDirectoryContentsSafe(DirectoryInfoBase directoryInfo, bool ignoreErrors)
+        {
+            try
+            {
+                if (directoryInfo.Exists)
+                {
+                    foreach (var fsi in directoryInfo.GetFileSystemInfos())
+                    {
+                        DeleteFileSystemInfo(fsi, ignoreErrors);
+                    }
+                }
+            }
+            catch
+            {
+                if (!ignoreErrors) throw;
             }
         }
 
@@ -196,24 +293,6 @@ namespace Kudu.Core.Infrastructure
             DoSafeAction(fileSystemInfo.Delete, ignoreErrors);
         }
 
-        private static void DeleteDirectoryContentsSafe(DirectoryInfoBase directoryInfo, bool ignoreErrors)
-        {
-            try
-            {
-                if (directoryInfo.Exists)
-                {
-                    foreach (var fsi in directoryInfo.GetFileSystemInfos())
-                    {
-                        DeleteFileSystemInfo(fsi, ignoreErrors);
-                    }
-                }
-            }
-            catch
-            {
-                if (!ignoreErrors) throw;
-            }
-        }
-
         private static void DoSafeAction(Action action, bool ignoreErrors)
         {
             try
@@ -225,5 +304,6 @@ namespace Kudu.Core.Infrastructure
                 if (!ignoreErrors) throw;
             }
         }
+
     }
 }

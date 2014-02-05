@@ -13,7 +13,6 @@ namespace Kudu.Core.Deployment
     public class DeploymentStatusFile : IDeploymentStatusFile
     {
         private const string StatusFile = "status.xml";
-        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
         private readonly string _activeFile;
         private readonly string _statusFile;
         private readonly IOperationLock _statusLock;
@@ -55,12 +54,12 @@ namespace Kudu.Core.Deployment
                 string path = Path.Combine(environment.DeploymentsPath, id, StatusFile);
                 XDocument document = null;
 
-                if (!FileSystemHelpers.Instance.File.Exists(path))
+                if (!FileSystemHelpers.FileExists(path))
                 {
                     return null;
                 }
 
-                using (var stream = FileSystemHelpers.Instance.File.OpenRead(path))
+                using (var stream = FileSystemHelpers.OpenRead(path))
                 {
                     document = XDocument.Load(stream);
                 }
@@ -164,19 +163,19 @@ namespace Kudu.Core.Deployment
 
             _statusLock.LockOperation(() =>
             {
-                using (Stream stream = FileSystem.File.Create(_statusFile))
+                using (Stream stream = FileSystemHelpers.CreateFile(_statusFile))
                 {
                     document.Save(stream);
                 }
 
                 // Used for ETAG
-                if (FileSystem.File.Exists(_activeFile))
+                if (FileSystemHelpers.FileExists(_activeFile))
                 {
-                    FileSystem.File.SetLastWriteTimeUtc(_activeFile, DateTime.UtcNow);
+                    FileSystemHelpers.SetLastWriteTimeUtc(_activeFile, DateTime.UtcNow);
                 }
                 else
                 {
-                    FileSystem.File.WriteAllText(_activeFile, String.Empty);
+                    FileSystemHelpers.WriteAllText(_activeFile, String.Empty);
                 }
             }, DeploymentStatusManager.LockTimeout);
         }

@@ -108,7 +108,7 @@ namespace Kudu.Core.Jobs
         {
             try
             {
-                FileInfoBase logFile = FileSystem.FileInfo.FromFileName(_logFilePath);
+                FileInfoBase logFile = FileSystemHelpers.FileInfoFromFileName(_logFilePath);
 
                 if (logFile.Length > MaxContinuousLogFileSize)
                 {
@@ -118,7 +118,7 @@ namespace Kudu.Core.Jobs
                     {
                         // roll log file, currently allow only 2 log files to exist at the same time
                         string prevLogFilePath = GetLogFilePath(JobPrevLogFileName);
-                        FileSystem.File.Delete(prevLogFilePath);
+                        FileSystemHelpers.DeleteFileSafe(prevLogFilePath);
                         logFile.MoveTo(prevLogFilePath);
                     }
                 }

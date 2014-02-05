@@ -41,7 +41,7 @@ namespace Kudu.Core.Infrastructure
             FileSystemHelpers.EnsureDirectory(Path.GetDirectoryName(_path));
 
             // Set up lock file watcher. Note that depending on how the file is accessed the file watcher may generate multiple events.
-            _lockFileWatcher = new FileSystemWatcher(FileSystemHelpers.Instance.Path.GetDirectoryName(_path), FileSystemHelpers.Instance.Path.GetFileName(_path));
+            _lockFileWatcher = new FileSystemWatcher(Path.GetDirectoryName(_path), Path.GetFileName(_path));
             _lockFileWatcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.FileName;
             _lockFileWatcher.Changed += OnLockReleased;
             _lockFileWatcher.Deleted += OnLockReleased;
@@ -69,7 +69,7 @@ namespace Kudu.Core.Infrastructure
             get
             {
                 // If there's no file then there's no process holding onto it
-                if (!FileSystemHelpers.Instance.File.Exists(_path))
+                if (!FileSystemHelpers.FileExists(_path))
                 {
                     return false;
                 }
@@ -78,7 +78,7 @@ namespace Kudu.Core.Infrastructure
                 {
                     // If there is a file, lets see if someone has an open handle to it, or if it's
                     // just hanging there for no reason
-                    using (FileSystemHelpers.Instance.File.Open(_path, FileMode.Open, FileAccess.Write, FileShare.None)) { }
+                    using (FileSystemHelpers.OpenFile(_path, FileMode.Open, FileAccess.Write, FileShare.None)) { }
                 }
                 catch (Exception ex)
                 {
@@ -100,7 +100,7 @@ namespace Kudu.Core.Infrastructure
             {
                 FileSystemHelpers.EnsureDirectory(Path.GetDirectoryName(_path));
 
-                _lockStream = FileSystemHelpers.Instance.File.Open(_path, FileMode.Create, FileAccess.Write, FileShare.None);
+                _lockStream = FileSystemHelpers.OpenFile(_path, FileMode.Create, FileAccess.Write, FileShare.None);
 
                 OnLockAcquired();
 
@@ -161,7 +161,7 @@ namespace Kudu.Core.Infrastructure
         {
             try
             {
-                FileSystemHelpers.Instance.File.Delete(_path);
+                FileSystemHelpers.DeleteFile(_path);
             }
             catch (Exception ex)
             {

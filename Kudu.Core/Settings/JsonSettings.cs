@@ -19,7 +19,6 @@ namespace Kudu.Core.Settings
     public class JsonSettings
     {
         private string _path;
-        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
 
         public JsonSettings(string path)
         {
@@ -80,14 +79,14 @@ namespace Kudu.Core.Settings
 
         private JObject Read()
         {
-            if (!FileSystem.File.Exists(_path))
+            if (!FileSystemHelpers.FileExists(_path))
             {
                 return new JObject();
             }
 
             // opens file for FileAccess.Read but does allow other read/write (FileShare.ReadWrite).   
             // it is the most optimal where write is infrequent and dirty read is acceptable.
-            using (var reader = new JsonTextReader(new StreamReader(FileSystem.File.Open(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))))
+            using (var reader = new JsonTextReader(new StreamReader(FileSystemHelpers.OpenFile(_path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))))
             {
                 return JObject.Load(reader);
             }
@@ -95,14 +94,14 @@ namespace Kudu.Core.Settings
 
         private void Save(JObject json)
         {
-            if (!FileSystem.File.Exists(_path))
+            if (!FileSystemHelpers.FileExists(_path))
             {
                 FileSystemHelpers.EnsureDirectory(Path.GetDirectoryName(_path));
             }
 
             // opens file for FileAccess.Write but does allow other dirty read (FileShare.Read).   
             // it is the most optimal where write is infrequent and dirty read is acceptable.
-            using (var writer = new JsonTextWriter(new StreamWriter(FileSystem.File.Open(_path, FileMode.Create, FileAccess.Write, FileShare.Read))))
+            using (var writer = new JsonTextWriter(new StreamWriter(FileSystemHelpers.OpenFile(_path, FileMode.Create, FileAccess.Write, FileShare.Read))))
             {
                 // prefer indented-readable format
                 writer.Formatting = Formatting.Indented;

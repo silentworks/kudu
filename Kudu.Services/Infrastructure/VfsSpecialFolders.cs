@@ -64,7 +64,7 @@ namespace Kudu.Services.Infrastructure
         {
             if (!String.IsNullOrEmpty(SystemDrivePath))
             {
-                var dir = FileSystemHelpers.Instance.DirectoryInfo.FromDirectoryName(SystemDrivePath + Path.DirectorySeparatorChar);
+                var dir = FileSystemHelpers.DirectoryInfoFromDirectoryName(SystemDrivePath + Path.DirectorySeparatorChar);
                 yield return new VfsStatEntry
                 {
                     Name = SystemDriveFolder,
@@ -77,7 +77,7 @@ namespace Kudu.Services.Infrastructure
 
             if (!String.IsNullOrEmpty(LocalSiteRootPath))
             {
-                var dir = FileSystemHelpers.Instance.DirectoryInfo.FromDirectoryName(LocalSiteRootPath + Path.DirectorySeparatorChar);
+                var dir = FileSystemHelpers.DirectoryInfoFromDirectoryName(LocalSiteRootPath + Path.DirectorySeparatorChar);
                 yield return new VfsStatEntry
                 {
                     Name = LocalSiteRootFolder,

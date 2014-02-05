@@ -112,7 +112,7 @@ namespace Kudu.Core.SSHKey.Test
             fileBase.Setup(s => s.WriteAllText(sshPath + @"\config", "HOST *\r\n  StrictHostKeyChecking no"));
             fileBase.Setup(s => s.WriteAllText(sshPath + @"\id_rsa", It.IsAny<string>()));
             fileBase.Setup(s => s.Exists(sshPath + @"\id_rsa.pub"))
-                    .Returns(() => ++invoked == 1);
+                    .Returns(() => ++invoked <= 2);
 
             var directory = new Mock<DirectoryBase>();
             directory.Setup(d => d.Exists(sshPath)).Returns(true);

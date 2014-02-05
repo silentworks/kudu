@@ -111,7 +111,7 @@ namespace Kudu.Core.Jobs
         {
             string instanceId = InstanceIdUtility.GetShortInstanceId();
 
-            string[] statusFiles = FileSystem.Directory.GetFiles(jobsSpecificDataPath, StatusFilesSearchPattern);
+            string[] statusFiles = FileSystemHelpers.GetFiles(jobsSpecificDataPath, StatusFilesSearchPattern);
             if (statusFiles.Length <= 0)
             {
                 // If no status files exist update to default values
@@ -154,11 +154,11 @@ namespace Kudu.Core.Jobs
             job.DetailedStatus = stringBuilder.ToString();
         }
 
-        private bool TryDelete(string statusFile)
+        private static bool TryDelete(string statusFile)
         {
             try
             {
-                FileSystem.File.Delete(statusFile);
+                FileSystemHelpers.DeleteFileSafe(statusFile);
                 return true;
             }
             catch
@@ -249,7 +249,7 @@ namespace Kudu.Core.Jobs
             lock (_lockObject)
             {
                 // Check if there is a directory we can listen on
-                if (!FileSystem.Directory.Exists(JobsBinariesPath))
+                if (!FileSystemHelpers.DirectoryExists(JobsBinariesPath))
                 {
                     // If not check again in 30 seconds
                     _startFileWatcherTimer.Change(CheckForWatcherTimeout, Timeout.Infinite);

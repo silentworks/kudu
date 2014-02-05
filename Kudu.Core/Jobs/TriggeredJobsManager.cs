@@ -66,7 +66,7 @@ namespace Kudu.Core.Jobs
         public TriggeredJobRun GetJobRun(string jobName, string runId)
         {
             string triggeredJobRunPath = Path.Combine(JobsDataPath, jobName, runId);
-            DirectoryInfoBase triggeredJobRunDirectory = FileSystem.DirectoryInfo.FromDirectoryName(triggeredJobRunPath);
+            DirectoryInfoBase triggeredJobRunDirectory = FileSystemHelpers.DirectoryInfoFromDirectoryName(triggeredJobRunPath);
 
             return BuildJobRun(triggeredJobRunDirectory, jobName, isLatest: true);
         }
@@ -108,7 +108,7 @@ namespace Kudu.Core.Jobs
         private DirectoryInfoBase[] GetJobRunsDirectories(string jobName)
         {
             string jobHistoryPath = Path.Combine(JobsDataPath, jobName);
-            DirectoryInfoBase jobHistoryDirectory = FileSystem.DirectoryInfo.FromDirectoryName(jobHistoryPath);
+            DirectoryInfoBase jobHistoryDirectory = FileSystemHelpers.DirectoryInfoFromDirectoryName(jobHistoryPath);
             if (!jobHistoryDirectory.Exists)
             {
                 return null;
@@ -165,7 +165,7 @@ namespace Kudu.Core.Jobs
         {
             string filePath = Path.Combine(triggeredJobRunPath, fileName);
 
-            if (FileSystem.File.Exists(filePath))
+            if (FileSystemHelpers.FileExists(filePath))
             {
                 return BuildVfsUrl("{0}/{1}/{2}".FormatInvariant(jobName, runId, fileName));
             }

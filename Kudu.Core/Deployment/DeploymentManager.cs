@@ -21,7 +21,6 @@ namespace Kudu.Core.Deployment
     public class DeploymentManager : IDeploymentManager
     {
         private static readonly Random _random = new Random();
-        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
 
         private readonly ISiteBuilderFactory _builderFactory;
         private readonly IEnvironment _environment;
@@ -88,7 +87,7 @@ namespace Kudu.Core.Deployment
             {
                 string path = GetLogPath(id, ensureDirectory: false);
 
-                if (!FileSystem.File.Exists(path))
+                if (!FileSystemHelpers.FileExists(path))
                 {
                     throw new FileNotFoundException(String.Format(CultureInfo.CurrentCulture, Resources.Error_NoLogFound, id));
                 }
@@ -115,7 +114,7 @@ namespace Kudu.Core.Deployment
             {
                 string path = GetLogPath(id, ensureDirectory: false);
 
-                if (!FileSystem.File.Exists(path))
+                if (!FileSystemHelpers.FileExists(path))
                 {
                     throw new FileNotFoundException(String.Format(CultureInfo.CurrentCulture, Resources.Error_NoLogFound, id));
                 }
@@ -135,7 +134,7 @@ namespace Kudu.Core.Deployment
             {
                 string path = GetRoot(id, ensureDirectory: false);
 
-                if (!FileSystem.Directory.Exists(path))
+                if (!FileSystemHelpers.DirectoryExists(path))
                 {
                     throw new DirectoryNotFoundException(String.Format(CultureInfo.CurrentCulture, Resources.Error_UnableToDeleteNoDeploymentFound, id));
                 }
@@ -664,7 +663,7 @@ namespace Kudu.Core.Deployment
 
         private IEnumerable<DeployResult> EnumerateResults()
         {
-            if (!FileSystem.Directory.Exists(_environment.DeploymentsPath))
+            if (!FileSystemHelpers.DirectoryExists(_environment.DeploymentsPath))
             {
                 yield break;
             }
@@ -672,7 +671,7 @@ namespace Kudu.Core.Deployment
             string activeDeploymentId = _status.ActiveDeploymentId;
             bool isDeploying = IsDeploying;
 
-            foreach (var id in FileSystem.Directory.GetDirectories(_environment.DeploymentsPath))
+            foreach (var id in FileSystemHelpers.GetDirectories(_environment.DeploymentsPath))
             {
                 DeployResult result = GetResult(id, activeDeploymentId, isDeploying);
 

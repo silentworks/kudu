@@ -100,7 +100,7 @@ namespace Kudu.Services.Diagnostics
 
                 _stats = stats;
                 _tracer = tracer;
-                _directory = FileSystemHelpers.Instance.DirectoryInfo.FromDirectoryName(env.ApplicationLogFilesPath);
+                _directory = FileSystemHelpers.DirectoryInfoFromDirectoryName(env.ApplicationLogFilesPath);
             }
 
             public IEnumerable<FileInfoBase> FindLogFiles()
@@ -160,7 +160,7 @@ namespace Kudu.Services.Diagnostics
                 StreamReader reader = null;
                 try
                 {
-                    stream = FileSystemHelpers.Instance.File.Open(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    stream = FileSystemHelpers.OpenFile(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                     reader = new StreamReader(stream);
 
                     if (_stats != null)
@@ -281,7 +281,7 @@ namespace Kudu.Services.Diagnostics
                 {
                     try
                     {
-                        var stream = FileSystemHelpers.Instance.File.Open(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                        var stream = FileSystemHelpers.OpenFile(fileInfo.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                         if (_stats != null)
                         {
                             _stats.IncrementOpenReadCount(fileInfo.Name);

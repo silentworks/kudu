@@ -10,7 +10,6 @@ namespace Kudu.Core.SSHKey
 {
     public class SSHKeyManager : ISSHKeyManager
     {
-        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
         private const string PrivateKeyFile = "id_rsa";
         private const string PublicKeyFile = "id_rsa.pub";
         private const string ConfigFile = "config";
@@ -44,16 +43,16 @@ namespace Kudu.Core.SSHKey
                 FileSystemHelpers.EnsureDirectory(_sshPath);
 
                 // Delete existing public key
-                if (FileSystem.File.Exists(_id_rsaPub))
+                if (FileSystemHelpers.FileExists(_id_rsaPub))
                 {
-                    FileSystem.File.Delete(_id_rsaPub);
+                    FileSystemHelpers.DeleteFileSafe(_id_rsaPub);
                 }
 
                 // bypass service key checking prompt (StrictHostKeyChecking=no).
-                FileSystem.File.WriteAllText(_config, ConfigContent);
+                FileSystemHelpers.WriteAllText(_config, ConfigContent);
 
                 // This overrides if file exists
-                FileSystem.File.WriteAllText(_id_rsa, key);
+                FileSystemHelpers.WriteAllText(_id_rsa, key);
             }
         }
 
@@ -65,11 +64,11 @@ namespace Kudu.Core.SSHKey
             ITracer tracer = _traceFactory.GetTracer();
             using (tracer.Step("SSHKeyManager.GetKey"))
             {
-                if (FileSystem.File.Exists(_id_rsaPub))
+                if (FileSystemHelpers.FileExists(_id_rsaPub))
                 {
                     tracer.Trace("Public key exists.");
                     // If a public key exists, return it.
-                    return FileSystem.File.ReadAllText(_id_rsaPub);
+                    return FileSystemHelpers.ReadAllText(_id_rsaPub);
                 }
                 else if (ensurePublicKey)
                 {
@@ -109,10 +108,10 @@ namespace Kudu.Core.SSHKey
                     string privateKey = PEMEncoding.GetString(privateKeyParam);
                     string publicKey = SSHEncoding.GetString(publicKeyParam);
 
-                    FileSystem.File.WriteAllText(_id_rsa, privateKey);
-                    FileSystem.File.WriteAllText(_id_rsaPub, publicKey);
+                    FileSystemHelpers.WriteAllText(_id_rsa, privateKey);
+                    FileSystemHelpers.WriteAllText(_id_rsaPub, publicKey);
 
-                    FileSystem.File.WriteAllText(_config, ConfigContent);
+                    FileSystemHelpers.WriteAllText(_config, ConfigContent);
 
                     return publicKey;
                 }

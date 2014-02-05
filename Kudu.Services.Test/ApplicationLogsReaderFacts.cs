@@ -719,7 +719,7 @@ System.ApplicationException: The trace listener AzureTableTraceListener is disab
                     .Returns(() => new MemoryStream(_defaultFileSystem.GetFile(path).Contents));            
             }
 
-            return _defaultFileSystem.FileInfo.FromFileName(path);            
+            return FileSystemHelpers.FileInfoFromFileName(path);            
         }
 
         public void AddLogFileWithOpenException<T>(string name) where T : Exception, new()

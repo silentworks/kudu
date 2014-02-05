@@ -10,7 +10,6 @@ namespace Kudu.Core.Deployment
     public class DeploymentStatusManager : IDeploymentStatusManager
     {
         public static readonly TimeSpan LockTimeout = TimeSpan.FromSeconds(60);
-        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
         private readonly IEnvironment _environment;
         private readonly IOperationLock _statusLock;
         private readonly string _activeFile;
@@ -42,13 +41,13 @@ namespace Kudu.Core.Deployment
                 FileSystemHelpers.DeleteDirectorySafe(path, ignoreErrors: true);
 
                 // Used for ETAG
-                if (FileSystem.File.Exists(_activeFile))
+                if (FileSystemHelpers.FileExists(_activeFile))
                 {
-                    FileSystem.File.SetLastWriteTimeUtc(_activeFile, DateTime.UtcNow);
+                    FileSystemHelpers.SetLastWriteTimeUtc(_activeFile, DateTime.UtcNow);
                 }
                 else
                 {
-                    FileSystem.File.WriteAllText(_activeFile, String.Empty);
+                    FileSystemHelpers.WriteAllText(_activeFile, String.Empty);
                 }
             }, LockTimeout);
         }
@@ -64,9 +63,9 @@ namespace Kudu.Core.Deployment
             {
                 return _statusLock.LockOperation(() =>
                 {
-                    if (FileSystem.File.Exists(_activeFile))
+                    if (FileSystemHelpers.FileExists(_activeFile))
                     {
-                        return FileSystem.File.ReadAllText(_activeFile);
+                        return FileSystemHelpers.ReadAllText(_activeFile);
                     }
 
                     return null;
@@ -74,7 +73,7 @@ namespace Kudu.Core.Deployment
             }
             set
             {
-                _statusLock.LockOperation(() => FileSystem.File.WriteAllText(_activeFile, value), LockTimeout);
+                _statusLock.LockOperation(() => FileSystemHelpers.WriteAllText(_activeFile, value), LockTimeout);
             }
         }
 
@@ -85,9 +84,9 @@ namespace Kudu.Core.Deployment
             {
                 return _statusLock.LockOperation(() =>
                 {
-                    if (FileSystem.File.Exists(_activeFile))
+                    if (FileSystemHelpers.FileExists(_activeFile))
                     {
-                        return FileSystem.File.GetLastWriteTimeUtc(_activeFile);
+                        return FileSystemHelpers.GetLastWriteTimeUtc(_activeFile);
                     }
                     else
                     {

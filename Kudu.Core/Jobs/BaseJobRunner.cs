@@ -41,8 +41,6 @@ namespace Kudu.Core.Jobs
             _externalCommandFactory = new ExternalCommandFactory(Environment, Settings, Environment.RepositoryPath);
         }
 
-        protected static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
-
         protected IEnvironment Environment { get; private set; }
 
         protected IDeploymentSettingsManager Settings { get; private set; }
@@ -68,7 +66,7 @@ namespace Kudu.Core.Jobs
         private static int CalculateHashForJob(string jobBinariesPath)
         {
             var updateDatesString = new StringBuilder();
-            DirectoryInfoBase jobBinariesDirectory = FileSystem.DirectoryInfo.FromDirectoryName(jobBinariesPath);
+            DirectoryInfoBase jobBinariesDirectory = FileSystemHelpers.DirectoryInfoFromDirectoryName(jobBinariesPath);
             FileInfoBase[] files = jobBinariesDirectory.GetFiles("*.*", SearchOption.AllDirectories);
             foreach (FileInfoBase file in files)
             {
@@ -93,12 +91,12 @@ namespace Kudu.Core.Jobs
 
             SafeKillAllRunningJobInstances(logger);
 
-            if (FileSystem.Directory.Exists(JobTempPath))
+            if (FileSystemHelpers.DirectoryExists(JobTempPath))
             {
                 FileSystemHelpers.DeleteDirectorySafe(JobTempPath, true);
             }
 
-            if (FileSystem.Directory.Exists(JobTempPath))
+            if (FileSystemHelpers.DirectoryExists(JobTempPath))
             {
                 logger.LogWarning("Failed to delete temporary directory");
             }
@@ -137,7 +135,7 @@ namespace Kudu.Core.Jobs
                         JobName, job.Name));
             }
 
-            if (!FileSystem.File.Exists(job.ScriptFilePath))
+            if (!FileSystemHelpers.FileExists(job.ScriptFilePath))
             {
                 //Status = "Missing run_worker.cmd file";
                 //Trace.TraceError(Status);

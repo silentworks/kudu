@@ -16,7 +16,6 @@ namespace Kudu.Core.Tracing
     {
         // TODO: Make this configurable
         public const int MaxLogEntries = 200;
-        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
         private readonly Stack<TraceStep> _currentSteps = new Stack<TraceStep>();
         private readonly List<TraceStep> _steps = new List<TraceStep>();
         private readonly Stack<XElement> _elements = new Stack<XElement>();
@@ -152,7 +151,7 @@ namespace Kudu.Core.Tracing
 
                 document.Root.Add(stepElement);
 
-                using (var stream = FileSystem.File.Open(_path, FileMode.Create, FileAccess.Write, FileShare.Read))
+                using (var stream = FileSystemHelpers.OpenFile(_path, FileMode.Create, FileAccess.Write, FileShare.Read))
                 {
                     document.Save(stream);
                 }
@@ -193,16 +192,16 @@ namespace Kudu.Core.Tracing
 
         private XDocument GetDocument()
         {
-            if (!FileSystem.File.Exists(_path))
+            if (!FileSystemHelpers.FileExists(_path))
             {
-                FileSystem.Directory.CreateDirectory(Path.GetDirectoryName(_path));
+                FileSystemHelpers.CreateDirectory(Path.GetDirectoryName(_path));
                 return CreateDocumentRoot();
             }
 
             try
             {
                 XDocument document;
-                using (var stream = FileSystem.File.OpenRead(_path))
+                using (var stream = FileSystemHelpers.OpenRead(_path))
                 {
                     document = XDocument.Load(stream);
                 }

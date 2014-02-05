@@ -57,7 +57,7 @@ namespace Kudu.Core.Jobs
             int maxRuns = settings.GetMaxJobRunsHistoryCount() - 1;
 
             string historyPath = Path.Combine(environment.JobsDataPath, Constants.TriggeredPath, jobName);
-            DirectoryInfoBase historyDirectory = FileSystemHelpers.Instance.DirectoryInfo.FromDirectoryName(historyPath);
+            DirectoryInfoBase historyDirectory = FileSystemHelpers.DirectoryInfoFromDirectoryName(historyPath);
             if (!historyDirectory.Exists)
             {
                 return;

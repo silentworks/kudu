@@ -22,7 +22,6 @@ namespace Kudu.Services
 {
     public class FetchHandler : HttpTaskAsyncHandler
     {
-        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
         private readonly IDeploymentManager _deploymentManager;
         private readonly IDeploymentSettingsManager _settings;
         private readonly IDeploymentStatusManager _status;
@@ -52,11 +51,11 @@ namespace Kudu.Services
 
             // Prefer marker creation in ctor to delay create when needed.
             // This is to keep the code simple and avoid creation synchronization.
-            if (!FileSystem.File.Exists(_markerFilePath))
+            if (!FileSystemHelpers.FileExists(_markerFilePath))
             {
                 try
                 {
-                    FileSystem.File.WriteAllText(_markerFilePath, String.Empty);
+                    FileSystemHelpers.WriteAllText(_markerFilePath, String.Empty);
                 }
                 catch (Exception ex)
                 {
@@ -136,7 +135,7 @@ namespace Kudu.Services
                     {
                         // REVIEW: This makes the assumption that the repository url is the same.
                         // If it isn't the result would be buggy either way.
-                        FileSystem.File.SetLastWriteTimeUtc(_markerFilePath, DateTime.UtcNow);
+                        FileSystemHelpers.SetLastWriteTimeUtc(_markerFilePath, DateTime.UtcNow);
                     }
 
                     // Return a http 202: the request has been accepted for processing, but the processing has not been completed.
@@ -149,7 +148,7 @@ namespace Kudu.Services
         public async Task PerformDeployment(DeploymentInfo deploymentInfo)
         {
             DateTime currentMarkerFileUTC;
-            DateTime nextMarkerFileUTC = FileSystem.File.GetLastWriteTimeUtc(_markerFilePath);
+            DateTime nextMarkerFileUTC = FileSystemHelpers.GetLastWriteTimeUtc(_markerFilePath);
 
             do
             {
@@ -228,7 +227,7 @@ namespace Kudu.Services
                 }
 
                 // check marker file and, if changed (meaning new /deploy request), redeploy.
-                nextMarkerFileUTC = FileSystem.File.GetLastWriteTimeUtc(_markerFilePath);
+                nextMarkerFileUTC = FileSystemHelpers.GetLastWriteTimeUtc(_markerFilePath);
 
             } while (deploymentInfo.IsReusable && currentMarkerFileUTC != nextMarkerFileUTC);
         }

@@ -134,7 +134,7 @@ namespace Kudu.Core.Tracing
                     }
                 }
 
-                using (StreamWriter writer = new StreamWriter(FileSystemHelpers.Instance.File.Open(_logFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite)))
+                using (StreamWriter writer = new StreamWriter(FileSystemHelpers.OpenFile(_logFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite)))
                 {
                     writer.WriteLine(strb.ToString());
                 }

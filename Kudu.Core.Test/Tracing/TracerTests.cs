@@ -154,7 +154,7 @@ namespace Kudu.Core.Test.Tracing
 
         private void IntializeTraceFile(string path)
         {
-            using (var writer = new StreamWriter(FileSystemHelpers.Instance.File.Open(path, FileMode.Create, FileAccess.Write, FileShare.Read)))
+            using (var writer = new StreamWriter(FileSystemHelpers.OpenFile(path, FileMode.Create, FileAccess.Write, FileShare.Read)))
             {
                 writer.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
                 writer.WriteLine("<trace/>");
@@ -163,7 +163,7 @@ namespace Kudu.Core.Test.Tracing
 
         private XDocument ReadTraceFile(string path)
         {
-            using (var stream = FileSystemHelpers.Instance.File.OpenRead(path))
+            using (var stream = FileSystemHelpers.OpenRead(path))
             {
                 return XDocument.Load(stream);
             }

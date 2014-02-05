@@ -41,8 +41,6 @@ namespace Kudu.Core.Jobs
 
         protected IEnvironment Environment { get; private set; }
 
-        protected IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
-
         protected IDeploymentSettingsManager Settings { get; private set; }
 
         protected ITraceFactory TraceFactory { get; private set; }
@@ -73,7 +71,7 @@ namespace Kudu.Core.Jobs
         protected TJob GetJobInternal(string jobName)
         {
             string jobPath = Path.Combine(JobsBinariesPath, jobName);
-            DirectoryInfoBase jobDirectory = FileSystem.DirectoryInfo.FromDirectoryName(jobPath);
+            DirectoryInfoBase jobDirectory = FileSystemHelpers.DirectoryInfoFromDirectoryName(jobPath);
             return BuildJob(jobDirectory);
         }
 
@@ -81,12 +79,12 @@ namespace Kudu.Core.Jobs
         {
             var jobs = new List<TJob>();
 
-            if (!FileSystem.Directory.Exists(JobsBinariesPath))
+            if (!FileSystemHelpers.DirectoryExists(JobsBinariesPath))
             {
                 return Enumerable.Empty<TJob>();
             }
 
-            DirectoryInfoBase jobsDirectory = FileSystem.DirectoryInfo.FromDirectoryName(JobsBinariesPath);
+            DirectoryInfoBase jobsDirectory = FileSystemHelpers.DirectoryInfoFromDirectoryName(JobsBinariesPath);
             DirectoryInfoBase[] jobDirectories = jobsDirectory.GetDirectories("*", SearchOption.TopDirectoryOnly);
             foreach (DirectoryInfoBase jobDirectory in jobDirectories)
             {
@@ -223,9 +221,9 @@ namespace Kudu.Core.Jobs
             try
             {
                 string jobExtraInfoUrlFilePath = GetJobExtraInfoUrlFilePath(jobsSpecificDataPath);
-                if (FileSystem.File.Exists(jobExtraInfoUrlFilePath))
+                if (FileSystemHelpers.FileExists(jobExtraInfoUrlFilePath))
                 {
-                    string jobExtraInfoUrlFileContent = FileSystem.File.ReadAllText(jobExtraInfoUrlFilePath);
+                    string jobExtraInfoUrlFileContent = FileSystemHelpers.ReadAllText(jobExtraInfoUrlFilePath);
                     jobExtraInfoUrlFileContent = jobExtraInfoUrlFileContent.Trim();
                     if (!String.IsNullOrEmpty(jobExtraInfoUrlFileContent))
                     {

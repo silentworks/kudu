@@ -50,7 +50,7 @@ namespace Kudu.Services.Diagnostics
         private static IEnumerable<Dictionary<string, string>> GetNodeVersions()
         {
             string nodeRoot = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "nodejs");
-            var directoryInfo = FileSystemHelpers.Instance.DirectoryInfo.FromDirectoryName(nodeRoot);
+            var directoryInfo = FileSystemHelpers.DirectoryInfoFromDirectoryName(nodeRoot);
             if (directoryInfo.Exists)
             {
                 return directoryInfo.GetDirectories()

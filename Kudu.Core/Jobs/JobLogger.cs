@@ -19,8 +19,6 @@ namespace Kudu.Core.Jobs
             PreserveReferencesHandling = PreserveReferencesHandling.None
         };
 
-        protected static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
-
         protected IEnvironment Environment { get; private set; }
 
         protected ITraceFactory TraceFactory { get; private set; }
@@ -93,7 +91,7 @@ namespace Kudu.Core.Jobs
         {
             try
             {
-                if (!FileSystemHelpers.Instance.File.Exists(statusFilePath))
+                if (!FileSystemHelpers.FileExists(statusFilePath))
                 {
                     return null;
                 }

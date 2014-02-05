@@ -39,8 +39,7 @@ namespace Kudu.Core.Deployment.Generator.Test
 
             foreach (var existingFile in existingFiles)
             {
-                var file = existingFile;
-                fileMock.Setup(f => f.Exists("site\\" + file)).Returns(true);
+                fileMock.Setup(f => f.Exists("site\\" + existingFile)).Returns(true);
             }
 
             fileSystemMock.Setup(f => f.File).Returns(fileMock.Object);

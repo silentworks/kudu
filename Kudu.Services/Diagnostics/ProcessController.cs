@@ -181,7 +181,7 @@ namespace Kudu.Services.Performance
                         foreach (var fileName in new[] { "sos.dll", "mscordacwks.dll" })
                         {
                             string filePath = Path.Combine(ProcessExtensions.ClrRuntimeDirectory, fileName);
-                            if (FileSystemHelpers.Instance.File.Exists(filePath))
+                            if (FileSystemHelpers.FileExists(filePath))
                             {
                                 zip.AddFile(filePath, _tracer, String.Empty);
                             }
@@ -437,7 +437,7 @@ namespace Kudu.Services.Performance
             private readonly string _path;
 
             private FileStreamWrapper(string path)
-                : base(FileSystemHelpers.Instance.File.OpenRead(path))
+                : base(FileSystemHelpers.OpenRead(path))
             {
                 _path = path;
             }

@@ -28,7 +28,6 @@ namespace Kudu.Core.Hooks
             Formatting = Formatting.Indented,
             NullValueHandling = NullValueHandling.Ignore
         };
-        private static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
 
         private readonly IEnvironment _environment;
         private readonly string _hooksFilePath;
@@ -253,12 +252,12 @@ namespace Kudu.Core.Hooks
         {
             string fileContent = null;
 
-            if (!FileSystem.File.Exists(_hooksFilePath))
+            if (!FileSystemHelpers.FileExists(_hooksFilePath))
             {
                 return Enumerable.Empty<WebHook>();
             }
 
-            OperationManager.Attempt(() => fileContent = FileSystem.File.ReadAllText(_hooksFilePath));
+            OperationManager.Attempt(() => fileContent = FileSystemHelpers.ReadAllText(_hooksFilePath));
 
             if (!String.IsNullOrEmpty(fileContent))
             {
@@ -278,7 +277,7 @@ namespace Kudu.Core.Hooks
         private void SaveHooksToFile(IEnumerable<WebHook> hooks)
         {
             string hooksFileContent = JsonConvert.SerializeObject(hooks, JsonSerializerSettings);
-            OperationManager.Attempt(() => FileSystem.File.WriteAllText(_hooksFilePath, hooksFileContent));
+            OperationManager.Attempt(() => FileSystemHelpers.WriteAllText(_hooksFilePath, hooksFileContent));
         }
     }
 }

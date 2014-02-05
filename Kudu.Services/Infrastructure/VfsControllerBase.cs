@@ -53,7 +53,7 @@ namespace Kudu.Services.Infrastructure
                 return Task.FromResult(response);
             }
 
-            DirectoryInfoBase info = FileSystem.DirectoryInfo.FromDirectoryName(localFilePath);
+            DirectoryInfoBase info = FileSystemHelpers.DirectoryInfoFromDirectoryName(localFilePath);
 
             if (info.Attributes < 0)
             {
@@ -104,7 +104,7 @@ namespace Kudu.Services.Infrastructure
                 return Task.FromResult(response);
             }
 
-            DirectoryInfoBase info = FileSystem.DirectoryInfo.FromDirectoryName(localFilePath);
+            DirectoryInfoBase info = FileSystemHelpers.DirectoryInfoFromDirectoryName(localFilePath);
             bool itemExists = info.Attributes >= 0;
 
             if (itemExists && (info.Attributes & FileAttributes.Directory) != 0)
@@ -135,7 +135,7 @@ namespace Kudu.Services.Infrastructure
                 return Task.FromResult(response);
             }
 
-            DirectoryInfoBase dirInfo = FileSystem.DirectoryInfo.FromDirectoryName(localFilePath);
+            DirectoryInfoBase dirInfo = FileSystemHelpers.DirectoryInfoFromDirectoryName(localFilePath);
 
             if (dirInfo.Attributes < 0)
             {
@@ -173,12 +173,10 @@ namespace Kudu.Services.Infrastructure
                 }
 
                 // We are ready to delete the file
-                var fileInfo = FileSystem.FileInfo.FromFileName(localFilePath);
+                var fileInfo = FileSystemHelpers.FileInfoFromFileName(localFilePath);
                 return CreateFileDeleteResponse(fileInfo);
             }
         }
-
-        protected static IFileSystem FileSystem { get { return FileSystemHelpers.Instance; } }
 
         protected ITracer Tracer { get; private set; }
 
@@ -321,7 +319,7 @@ namespace Kudu.Services.Infrastructure
                 string path = routeData.Values["path"] as string;
                 if (!String.IsNullOrEmpty(path))
                 {
-                    result = FileSystem.Path.GetFullPath(Path.Combine(result, path));
+                    result = FileSystemHelpers.GetFullPath(Path.Combine(result, path));
                 }
                 else
                 {
